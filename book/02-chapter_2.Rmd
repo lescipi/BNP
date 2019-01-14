@@ -1,0 +1,103 @@
+# Dirichlet Processes
+
+\singlespacing
+
+\begin{displayquote}
+\rule{\linewidth}{0.7pt}\\
+\small \itshape
+In this chapter we will review the definition, construction and properties of the Dirichlet Process: the \say{normal distribution of Bayesian nonparametrics} (Ghosal and Vaart, 2017). We will review the role of the Dirichlet process in density estimation problems and its role as nonparametric Bayesian prior.\\
+\rule{\linewidth}{0.7pt}
+\end{displayquote}
+\bigskip
+
+\onehalfspacing
+
+Density estimation is concerned with inference about an unknown distribution $G$ on the basis of an observed i.i.d. sample, 
+$$y_i|G \sim G$$
+To use the machineries of Bayesian inference, we need to complete the model with a prior on probability model, say $\Pi$ -- that as we will see is indeed the Dirichlet Process -- for the unknown parameter $G$. A prior model on $G$ requires the specification of a probability measure on an infinite-dimensional parameter, that is, the specification of a BNP prior.
+
+
+
+
+## Definition
+One of the most popular BNP models is the Dirichlet process (DP) prior. The DP model was introduced by @ferguson1973 as a prior on the space of probability measures. Each draw from a Dirichlet process is itself a distribution. It is called a Dirichlet process because it has Dirichlet distributed finite dimensional marginal distributions
+$$\mathrm{Dir}(\alpha) = \frac{\prod _{i=1}^{K} \Gamma(\alpha_i)}{\Gamma \left(\sum_{i=1}^{K} \alpha_i\right)} \prod _{i=1}^{K}x_{i}^{\alpha _{i}-1} \qquad x_i \in (0,1), \quad \sum _{i=1}^{K} x_{i}=1, \quad \alpha_i > 0, \quad K \geq 2$$
+Distributions drawn from a Dirichlet process are discrete _almost surely_, but cannot be described using a finite number of parameters.
+
+The Dirichlet process (DP) is a stochastic process whose sample paths are __probability measures__ with probability one, i.e. it is a distribution over probability measures in $\mathrm{\Theta}$. Thus draws from a DP can be interpreted as random distributions. For a distribution over probability measures to be a DP, its marginal distributions have to take on a specific form. In fact, for a random distribution $G$ to be distributed according to a DP, its marginal distributions have to be Dirichlet distributed. Therefore, we can give the formal definition as follows
+\begin{displayquote}
+    \textbf{Dirichlet Process.} Let $\alpha > 0$ be a positive real number and $G_0$ be a probability measure (distribution) over $\Theta$. A DP with parameters $(\alpha, G_0)$ is a random probability measure $G$ defined on $\Theta$ which assigns probability $G(A)$ to every (measurable) set $A$ such that for each (measurable) finite partition $\{A_1, \dots, A_k\}$ of $\Theta$, the joint distribution of the the vector $(G(A_1), \dots, G(A_k))$ is the Dirichlet distribution with parameters $(\alpha G(A_1), \dots, \alpha G(A_k))$.
+\end{displayquote}
+Therefore, we say $G$ is Dirichlet process distributed with base distribution $G_0$ and concentration parameter $\alpha$, written 
+$G \sim \mathrm{DP}(\alpha, G_0)$ if 
+$$(G(A_1), \dots, G(A_k)) \sim \mathrm{Dir}\left(\alpha G_0(A_1), \dots, \alpha G_0(A_k)\right)$$
+for every finite measurable partition $A_1, \dots, A_k$ of $\Theta$. Using Kolmogorov's consistency theorem [@kolmogorov1960foundations], @ferguson1973 showed that such a process exists. Furthermore, there are a number of approaches to establish existence that make use of powerful and general mathematical results to establish existence, and often require regularity assumptions on $G_0$ and $\Theta$. One direct and elegant construction of the DP which need not impose such regularity assumptions is the __stick-breaking construction__ [@sethuraman94] which we explore in the following chapters.  
+
+The interpretaion of the parameter is the following. The base distribution can be seen as the mean of the DP: for any measurable set $A \in \Theta$, $\mathrm{E}[G(A)] = G_0(A)$. On the other hand, the concentration parameter can be understood as an inverse variance: $V[G(A)] = G_0(A)(1 - G_0(A))/(1+\alpha)$. The larger $\alpha$, the smaller the variance, i.e. the DP will concentrate more of its mass around the mean.
+
+### Properties
+An important property of the DP is the discrete nature of $G$. As a discrete random probability measure we can always write $G$ as a weighted sum of point masses $G(\cdot) = \sum_{i = 1}^{\infty} \pi_i \delta_{\theta_i}(\cdot)$, where $\pi_1,\dots,\pi_k$ are probability weights and $\delta_\theta(\cdot)$ denotes the Dirac measure at $\theta$. One concern can be the coverage of DP within the class of all distributions over $\Theta$. Samples from the DP are discrete, thus the set of distributions with positive probability under the DP is small. However it can be shown that if the topological support -- the smallest closed set $S$ in $\Theta$ with $G_0(S) = 1$ -- of $G_0$ is $\Theta$ itself, then any distribution over $\Theta$ can be approximated arbitrarily accurately by a sequence of draws from $\mathrm{DP}(\alpha, G_0)$. In other words, another important property of the DP is its large weak support, which means that under mild conditions, any distribution with the same support as $G_0$ can be well approximated weakly by a DP random probability measure. 
+
+
+## Stick-breaking construction
+We have stated that draws from a DP can be written as a weighted sum of point masses, given its discrete nature. @sethuraman94 made this precise by providing a constructive definition of the DP as such, called the __stick-breaking__ construction. This construction is also significantly more straightforward and general than mathematical proofs of the existence of DPs. It is simply given as follows: the locations $\theta_i$ are i.i.d. draws from the centering distribution $G_0$. Starting with a stick of length 1, each weight $\pi_k$ is defined as a fraction of $(1-\sum_{i<k} \pi_i)$ that is, a fraction of what is left of the stick after the preceding $k-1$ portions (point masses) are deducted. Formally,
+$$\pi_k = v_k \prod_{i<k} (1-v_i)$$
+with $v_k \stackrel{\small i.i.d.}{\sim} \mathrm{Beta}(1, \alpha)$, $\pi_1 = v_1$, and $\theta_k \stackrel{\small i.i.d.}{\sim} G_0$, where $\{v_k\}$ and $\{\theta_k\}$ are independent. Then
+$$G = \sum_{k=1}^{\infty} \pi_k \delta_{\theta_k}$$
+defines a $\mathrm{DP}(\alpha, G_0)$. The stick-breaking distribution over $\pi = \pi_1, \pi_2, \dots$ is sometimes written $\pi \sim \mathrm{GEM}(\alpha)$, where the letters stand for Griffiths, Engen and McCloskey [@pitman2002]. A consequence of this representation is that if $G \sim \mathrm{DP}(\alpha, G_0)$, $\theta \sim G_0$, and $\pi \sim \mathrm{Beta}(1, \alpha)$, and all of them are independent, then $\pi \delta_\theta(\cdot) + (1-\pi)G(\cdot)$ follows again $\mathrm{DP}(\alpha, G_0)$.
+
+Finally, the DP has an important conditioning property that can be shown to following immediately from the definition. If $A$ is a (measurable) set with $G_0(A) > 0$ (which implies that $G(A) > 0$ a.s.), then the random measure $G|_A$, i.e. the restriction of $G$ to $A$ defined by $G|_A(B) = G(B|A)$ is also a DP with parameters $\alpha$ and $G_0|_A$, and is independent of $G(A)$. The argument can be extended to more than one set. Thus the DP _locally_ splits into numerous independent DP's.
+
+
+
+
+
+
+### Posterior Distribution
+Let $G \sim \mathrm{DP}(\alpha, G_0)$. Since $G$ is a (random) distribution, we can in turn draw samples from $G$ itself. Let $\theta_1,\dots,\theta_n$ be a sequence of independent draws from $G$. Note that the $\theta_i$'s take values in $\Theta$ since $G$ is a distribution over $\Theta$. We are interested in the posterior distribution of $G$ given observed values of $\theta_1,\dots,\theta_n$. Let $A_1, \dots, A_k$ be a finite measurable partition of $\Theta$, and let $n_k$ be the observed number of $\theta_i$'s in partition $A_k$. By the conjugacy between the Dirichlet and the multinomial distributions, we have: 
+$$G(A_1), \dots, G(A_k) \; | \; \theta_1,\dots,\theta_n \sim \mathrm{Dir}\Big(\alpha G_0(A_1) + n_1 \; , \; \dots, \; \alpha G_0(A_k) + n_k \Big)$$
+Since the above is true for all finite measurable partitions, the posterior distribution over $G$ must be a DP as well. A little algebra shows that the posterior DP has updated concentration parameter $\alpha + n$ and base distribution $\frac{\alpha G_0 + \sum_{i=1}^{n} \delta_{\theta_i}}{\alpha + n}$, where $\delta_i$ is a point mass located at $\theta_i$ and $n_k = \sum_{i=1}^{n} \delta_i(A_k)$. In other words, the DP provides a conjugate family of priors over distributions that is closed under posterior updates given observations. Rewriting the posterior DP, we have:
+$$G | \theta_1,\dots,\theta_n \sim \mathrm{DP}\left( \alpha + n, \; \frac{\alpha}{\alpha + n} G_0 + \frac{n}{\alpha + n} \frac{\sum_{i=1}^{n} \delta_{\theta_i}}{n}\right)$$
+Notice that the posterior base distribution is a weighted average between the prior base distribution $G_0$ and the empirical distribution $\frac{\sum_{i=1}^{n} \delta_{\theta_i}}{n}$. The weight associated with the prior base distribution is proportional to $\alpha$, while the empirical distribution has weight proportional to the number of observations $n$. Thus we can interpret $\alpha$ as the strength or mass associated with the prior. In other words, under the sampling model $\theta_i|G \stackrel{\small i.i.d.}{\sim} G$ with a DP on $G$, the posterior distribution for $G$ is again a DP. The base measure of the posterior DP adds a point mass to the prior base measure at each observed data point $\theta_i$: the centering measure of the posterior DP is a weighted average of $G_0$ and the empirical distribution 
+$\sum_{i=1}^{n} \delta_{\theta_i}/n$ and the posterior total mass parameter is incremented to $\alpha + n$ [@ferguson1973].
+
+Taking $\alpha \to 0$, the prior becomes non-informative in the sense that the predictive distribution is just given by the empirical distribution. On the other hand, as the amount of observations grows large, $n \gg \alpha$, the posterior is simply dominated by the empirical distribution which is in turn a close approximation of the true underlying distribution. This gives a consistency property of the DP: the posterior DP approaches the true underlying distribution. 
+
+
+
+
+
+
+
+
+### Predictive Distribution
+A key property, as said, of the DP prior is its a.s. discreteness. Consider a random sample, $\theta_i | G \sim G$, i.i.d., $i = 1,\dots,n$. The discreteness of $G$ implies a positive probability of ties among the $\theta_i$. This is at the heart of the __Polya urn representation__ of @blackwell_macqueen73. In other words, the predictive distribution of the observations is given by the Polya urn scheme. The name _Polya urn_ stems from a metaphor useful in interpreting the marginal distribution. Specifically, each value in $\Theta$ is a unique color, and draws $\theta \sim G$ are balls with the drawn value being the color of the ball. In addition we have an urn containing previously seen balls. In the beginning there are no balls in the urn, and we pick a color drawn from $G_0$, i.e. draw $\theta_1 \sim G_0$, paint a ball with that color, and drop it into the urn. In subsequent steps, say the $n + 1$st, we will either, with probability $\frac{\alpha}{\alpha+n}$, pick a new color -- that is draw $\theta_{n+1} \sim G_0$ -- paint a ball with that color and drop the ball into the urn, or, with probability $\frac{n}{\alpha + n}$, reach into the urn to pick a random ball out  -- draw $\theta_{n+1}$ from the empirical distribution -- paint a new ball with the same color and drop both balls back into the urn. This scheme has been used to show the existence of the DP [@blackwell_macqueen73]. 
+
+Denote $\theta_1^\star,\dots,\theta_{k_n}^\star$ the $k_n$ unique values among the $n$ observations in the sample $\theta_1,\dots,\theta_n$ generated as $\theta|G \stackrel{\small i.i.d.}{\sim} G$ and $G\sim\mathrm{DP}(\alpha, G_0)$. Then
+$$\theta_1 \sim G_0$$
+$$\theta_{n+1}|\theta_1,\dots,\theta_n \sim \frac{\alpha}{\alpha + n} G_0 + \frac{1}{\alpha + n} \sum_{i=1}^{k_n} n_{i} \; \delta_{\theta_i^\star}$$
+where $n_{i} = \sum_{i=1}^{n} \mathbf{1}(\theta_i = \theta^\star_i)$ is the number of observations that are equal to the $j$-th unique value.
+
+Since the values of draws are repeated, let $\theta_1^\star,\dots,\theta_m^\star$ be the unique values among $\theta_1,\dots,\theta_n$, and $n_k$ be the number of repeats of $\theta_k$. The unique values of $\theta_1,\dots,\theta_n$ -- say, $n_1 = 3$ means that in the sample there are 3 $\theta_i = \theta_1^\star$ -- induce a partitioning of the set $[n] = \{1,\dots, n\}$ into clusters such that within each cluster, say cluster $k$, the $\theta_i$'s take on the same value $\theta_k^\star$. Given that $\theta_1,\dots,\theta_n$ are random, this induces a random partition of $[n]$. The distribution over partitions is called the Chinese restaurant process (CRP). In this metaphor we have a Chinese restaurant with an infinite number of tables, each of which can seat an infinite number of customers. The first customer enters the restaurant and sits at the first table. The second customer enters and decides either to sit with the first customer, or by herself at a new table. In general, the n + 1st customer either joins an already occupied table k with probability proportional to the number $n_k$ of customers already sitting there, or sits at a new table with probability proportional to $\alpha$. Identifying customers with integers $1, 2, \dots$ and tables as clusters, after $n$ customers have sat down the tables define a partition of $[n]$ with the distribution over partitions being the same as the one above. The fact that most Chinese restaurants have round tables is an important aspect of the CRP. This is because it does not just define a distribution over partitions of $[n]$, it also defines a distribution over permutations of $[n]$ with each table corresponding to a cycle of the permutation [@mullerq04]. 
+
+Therefore, we can rewrite the Polya urn sampling scheme in a different way. The observations $(\theta_1, \dots, \theta_n)$ can be equivalently parametrized in terms of the independent vectors $(s_1, \dots, s_n)$ and $\theta_1^\star,\dots,\theta_{m}^\star$ where
+$$s_1 \sim \delta_1$$
+meaning that $p(s_1) = 1$ if $s_1 = 1$ or 0 otherwise.
+$$s_{n+1} | s_1,\dots,s_n \sim \frac{\alpha}{\alpha + n} \delta_{n+1} + \frac{1}{\alpha + n} \sum_{k=1}^{m} n_{k} \; \delta_k$$
+$$\theta_k^\star \stackrel{\small i.i.d.}{\sim} G_0, \qquad k = 1,\dots,m$$
+and $\theta_i = \theta_k^\star$ if $s_i = k$.
+
+
+
+
+## Applications
+DPs are used across a wide variety of applications of Bayesian analysis in both statistics and machine learning. The main 3 examples are and most prevalent applications include: 
+
+### Bayesian model validation
+How does one validate that a model gives a good fit to some observed data? The Bayesian approach would usually involve computing the marginal probability of the observed data under the model, and comparing this marginal probability to that for other models. If the marginal probability of the model of interest is highest we may conclude that we have a good fit. The choice of models to compare against is an issue in this approach, since it is desirable to compare against as large a class of models as possible. The Bayesian nonparametric approach gives an answer to this question: use the space of all possible distributions as our comparison class, with a prior over distributions. The DP is a popular choice for this prior, due to its simplicity, wide coverage of the class of all distributions, and recent advances in computationally efficient inference in DP models. The approach is usually to use the given parametric model as the base distribution of the DP, with the DP serving as a nonparametric relaxation  around this parametric model. If the parametric model performs as well or better than the DP relaxed model, we have convincing evidence of the validity of the model.
+
+### Density estimation
+Another application of DPs is in density estimation. Here we are interested in modeling the density from which a given set of observations is drawn. To avoid limiting ourselves to any parametric class, we may again use a nonparametric prior over all densities. Here again DPs are a popular. However The DP generates distributions that are discrete with probability one, making it awkward for continuous density estimation. This limitation can be fixed by _convolving_ its trajectories with some _continuous kernel_, or more generally, by using a DP random measure as the mixing measure in a mixture over some simple parametric forms. Such an approach was introduced by @ferguson1973. The mixture model is the object of the next Chapter.
+
+
+

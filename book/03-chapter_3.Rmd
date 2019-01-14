@@ -1,0 +1,131 @@
+# Nonparametric Regression
+
+\singlespacing 
+
+\begin{displayquote}
+\rule{\linewidth}{0.7pt}\\
+\small \itshape
+In this chapter we will focus on regression problems and how they are approached from a Bayesian nonparametric perspective. In particular, we will provide the definition of mixture models and their Bayesian treatment, with and without dependence on covariates. In particular, we will discuss the Dependent Dirichlet Process prior. Finally, we will give the intuition behind the use of Dirichlet Process mixture models in settings where it is reasonable to introduce dependence among different samples and the ideas related to \say{borrowing of strenght}.\\
+\rule{\linewidth}{0.7pt}
+\end{displayquote}
+\bigskip
+
+\onehalfspacing
+Consider a generic regression problem with dependent variable $y_i$, covariates $x_i$, $i = 1,\dots,n$, and an assumed model $y_i = f(x_i) + \varepsilon_i$ with $\varepsilon_i \sim p_\varepsilon(\varepsilon_i)$. As long as both, the regression function $f(\cdot)$ and the residual distribution $p(\cdot)$, are indexed by finitely many parameters, inference reduces to a traditional parametric regression problem. The problem becomes a nonparametric regression when the investigator wants to relax the parametric assumptions of either of the two model elements. This characterization of nonparametric regression allows for three cases.
+
+__Nonparametric Residuals.__ The model can be generalized by going nonparametric on the residual distribution, assuming $\varepsilon | G \stackrel{\small i.i.d.}{\sim} G$ with a nonparametric prior $p(G)$ on $G$, while keeping the regression mean function parametric as $f(\cdot) = f_\theta(\cdot)$  indexed by a (finite-dimensional) parameter vector $\theta$ with prior $\pi$. We refer to this case as a _nonparametric error model_. Essentially this becomes density estimation for the residual error. Of course the residuals $\varepsilon_i$ are not usually observable. Hence, the problem reduces to one of density estimation conditional on assumed values for the parameters $\theta$. In principle, any model that was used for density estimation could be used. However, there is a minor complication. To maintain the interpretation of $\varepsilon$ as residuals and to avoid identifiability concerns, it is desireable to center the random $G$ at zero, for example, with $E(G) = 0$ or median 0. 
+
+
+__Nonparametric Mean Function.__
+One could, instead, relax the parametric assumption on the mean function and complete the model with a nonparametric prior $f(\cdot) \sim p(f)$. We refer to this as a _nonparametric regression mean function_. Popular choices for $p(f)$ are Gaussian process priors or priors based on basis expansions, such as wavelet based priors or neural network models. This approach, however, is  limited in the sense that it only allows for flexibility in the mean. Many datasets present non normality or multi-modality of the errors, degrees of skewness, or tail behavior in different regions of the covariate space. To capture such behavior, a flexible approach for modeling the conditional density that allows both the mean and error distribution to evolve flexibly with the covariates is required.
+
+
+__Fully Nonparametric Regression.__ One could go nonparametric on both assumptions. We refer to this as a _fully nonparametric regression_. The sampling model becomes $p(y_i | x_i) = G_x$, with a prior on the family of conditional Random Probability Measures, $p(G_x, x \in \mathrm{X})$. Many commonly used BNP priors for $\mathcal{G} = \{G_x\}$ are variations of dependent DP priors. In the next section we will review mixture model, a useful way to face this task.
+
+
+
+## Mixture models
+For independent and identically distributed data, __mixture models__ are an extremely useful tool for flexible density estimation due to their ability to approximate a large class of densities and their attractive balance between smoothness and flexibility in modeling local features. The canonical form of a mixture model is the following 
+$$p(y|G) = \int K(y;\theta) \; dG(\theta)$$
+where $G$ is a probability measure on the parameter space $\Theta$, $\mathrm{Y}$ is the sample space, and $K(y; \theta)$ is a _kernel_ on $\mathrm{Y}\times\Theta$. The kernel, $K(y; \theta)$, is defined by 
+\vspace{-10pt}
+
+* $K(\cdot; \theta)$ is a density on $\mathrm{Y}$ with respect to the Lebesgue measure and 
+* $K(y; \theta)$ is a measurable function of $\theta$, where $Theta$ is assumed to be a complete and separable metric space and equipped with its Borel $\sigma$-algebra
+
+That is $K$ is a Markov Kernel (see Chapter 1). In a Bayesian setting, this model is completed with a prior distribution on the mixing measure $G$ taking values in $\mathrm{M}(\Theta)$ where $\mathrm{M}(\Theta)$ denotes the set of probability measures on $\Theta$. A common prior choice takes $G$ as a discrete random measure with probability one. In this case, $G$ has the following representation almost surely
+$$G = \sum_{k=j}^{J} \pi_j \delta_{\theta_j}$$
+for some random atoms $\theta_j$ taking values in $\Theta$ and weights $\pi_j$ such that $\pi_j \geq 0$ and $\sum_j pi_j = 1$ almost surely. The mixture model can then be, thus, expressed as a convex combination of kernels
+$$p(y|G) = \sum_{k=j}^{J} \pi_j K(y;\theta_j)$$
+Now we would like to make this problem of density estimation covariate-dependent. In general, the model may be extended in one of two ways [@wade]. 
+
+The first approach is closely related to classical kernel regression methods and involves augmenting the observed data to include the covari-ates. The joint density is modelled as
+$$p(y,x|G) = \sum_{k=j}^{J} \pi_j K(y,x;\theta_j)$$
+and the conditional density estimate is obtained as, from @wade,  
+$$p(y|x, G) = \frac{\sum_{j=1}^{J} \pi_jK(y,x;\theta_j)}{\sum_{j'=1}^{J} \pi_{j'} K(x;\theta_{j'})}$$
+However, this approach requires the modelling of the marginal of $X$, and usually we take $X$ as deterministic and thus we do not need to model it.
+
+The second approach overcomes this by directly modelling the covariate-dependent density. In this case the mixture model is extended by allowing the mixing distribution $G$ to depend on $x$. Hence, for every $x\in\mathrm{X}$
+$$p(y,x|G_x) = \int K(y,x;\theta) \; G_x(\theta)$$
+the Bayesian model is completed by assigning a prior distribution on the family $\mathcal{G} = \{G_x, x \in \mathrm{X}\}$ of covariate-dependent mixing probability measures. The realizations of $\mathcal{G}$ are in $\mathrm{M}(\Theta)^\mathrm{X}$. If the prior gives probability one to the set of discrete probability measures, then (a.s.) 
+$$G_x = \sum_{j=1}^{J} \pi_j(x) \; \delta_{\theta_j(x)}$$
+and
+$$p(y,x|G_x) = \sum_{j=1}^{J} \pi_j(x) \; K\big(y,x;\theta_j(x)\big)$$
+where $\theta_j(x)$ takes values in $\Theta$ and the weights $\pi_j(x)$ are such that $\pi_j(x) \geq 0$ and $\sum_j \pi_j(x) = 1$ (a.s.) for all $x \in\mathrm{X}$. The number of mixture components, $J$, plays a key role in the flexibility of the model. Finite mixtures are defined with $J < \infty$ and they are known as _mixture of experts_ in machine learning literature. 
+
+However, they require either the choice of $J$, which in practice is chosen through post-processing techniques, or, in Bayesian setting, a prior on $J$, which requires posterior sampling of $J$. Instead, nonparametric mixtures define $J = \infty$. The general models described above, substituting with $J = \infty$ are the starting point for Bayesian nonparametric mixture models for regression. The models are completed with a definition of the kernel and a prior choice for the weights and atoms. 
+
+The choice of an appropriate kernel, $K(\cdot;\cdot)$, depends on the underlying sample space [@mullerq04]. If the underlying density function is defined on the entire real line, a location-scale kernel is appropriate. On the unit interval, beta distributions is a flexible choice. On the positive half line, mixtures of gamma is sensible. The use of a uniform kernel leads to random histograms. @petrone2002 motivated a canonical way of viewing the choice of a kernel through the notion of a Feller sampling scheme, and called the resulting prior a Feller prior.
+
+
+
+## Dirichlet Process Mixture Models
+The Dirichlet process is commonly chosen as the prior for the mixing measure. The mixture model above, together with a DP prior on the mixing measure $G$, can equivalently be written as a hierarchical model. Here the nonparametric nature of the Dirichlet process translates to mixture models with a countably infinite number of components. We model a set of observations $\{y_1, \dots, y_n\}$ using a set of _latent_ parameters $\{\theta_1, \dots, \theta_n\}$. Each $\theta_i$ is drawn independently and identically from $G$, while each $y_i$ has distribution $p(y_i | \theta_i)$ parametrized by $\theta_i$.
+Assume $y_i | G \stackrel{\small i.i.d.}{\sim} p(y|G)$ as above, then the equivalent hierarchical model is
+$$y_i | \theta_i \stackrel{\small ind}{\sim} p(y_i|\theta_i)$$
+$$\theta_i | G \stackrel{\small i.i.d.}{\sim} G$$
+$$G|\alpha, G_0 \sim \mathrm{DP}(\alpha,G_0)$$
+The hierarchical model introduces new latent variables $\theta_i$ specific to each observation. Integrating out the $(\theta_1,\dots, \theta_n)$, we have that given $G$, the $y_i$ are independent with density
+$$p(y|G) = \int_\Theta K(y;\theta) \; dG(\theta) = \sum_{j=1}^{\infty} \pi_j \; K(y;\theta_j)$$
+where $K(\cdot; \theta)$ is the density of $p(\cdot|\theta)$. Under this hierarchical model, the posterior distribution on $G$, $p(G|y)$ is a mixture of DP's, mixing with respect to $\theta_i$, that is
+$$G|y \sim \int \mathrm{DP} \left(\alpha + n, \; \frac{\alpha}{\alpha + n} G_0 + \frac{n}{\alpha + n} \frac{\sum_{i=1}^{n} \delta_{\theta_i}}{n} \right) dG(\theta|y)$$
+where $\theta = (\theta_1, \dots, \theta_n)$ and $y = (y_1, \dots, y_n)$. Therefore, marginalizing with respect to $\theta$, the posterior given $y$ becomes a mixture over the posterior DP (given $\theta$) with respect to the posterior distribution on $\theta$. 
+
+
+
+
+## Dependent Dirichlet Process
+Many applications call for more than one random probability measure $G$. The generic regression problem of predicting an outcome $y$ conditional on a covariate $x$ could be described as inference for the conditional distributions $G_x(\cdot) = p(y_i | x_i = x)$ for $x\in \mathrm{X}$ -- when $p(y_i | x_i = x)$ is indexed by finitely many parameters we are back to parametric. In our case, the problem becomes one of inference for a family of random probability measures $\mathcal{G} = \{G_x, x \in \mathrm{X}\}$, indexed by the covariates $x$. We thus need a BNP prior $p(\mathcal{G}) \stackrel{\small def}{=} p(G_x; x \in \mathrm{X})$ for the entire family. In the application to nonparametric regression as well as many other applications it is natural to require that $G_x$ be dependent across $x$. Surely we would not expect $G_x$ to change substantially for minor changes of $x$. 
+
+Perhaps the most popular prior model for a _family_ of random probability measures is the dependent DP (DDP). It was originally introduced by maceachern99, with many variations defined in later papers. The basic idea is simple. We say that $\mathcal{G}$ is a dependent DP (DDP) if, for for every $x\in\mathrm{X}$ we can write the following. 
+
+
+### Covariate-dependent atoms
+Start with the stick breaking construction of a DP random probability measure 
+$$G_x = \sum_{j=0}^{\infty} \pi_j \; \delta_{\theta_{j}(x)}$$
+with point masses at locations $\theta_{j}(x) \sim G_x$ and weights $\pi_j = v_j \prod_{i<j} (1-v_i)$ for i.i.d. beta fractions $v_j \stackrel{\small i.i.d.}{\sim} \mathrm{Beta}(1, \alpha)$. By the following construction, the model can be generalized to a joint prior for $\mathcal{G}$, keeping a DP prior as the marginal for $G_x$, for every $x\in\mathrm{X}$, but introducing the desired dependence across $x$. 
+
+To ensure the marginal DP prior we have to keep the i.i.d. prior on $\theta_{j}(x)$ across $j$. But we are free to introduce dependence of $\theta_{j}(x)$ across $x$ (for every $j$). The simple, yet powerful idea of the DDP construction is to introduce dependence over $x$, i.e., to link the $G_x$ through _dependent locations_ of the point masses: let $\theta_{j} = (\theta_{j}(x), \; x\in\mathrm{X})$ denote the family of random variables $\theta_{j}(x)$ for fixed $j$ that are mutually independent, that is given $j$, $\theta_{j}$ is a stochastic process indexed by $x$.
+
+Implicit in the notation used in the formula above is the definition of weights $\pi_{j}$ that are common across $x$ -- this variation of the DDP model is sometimes referred to as \say{common weight} or \say{single $\pi$} DDP which features only __covariate dependent atoms__. The regression model can be, thus, written as
+$$p(y|x, G_x) = \sum_{j=1}^{\infty} \pi_j \; K\big(y,x;\theta_j(x)\big)$$
+$$G_x = \sum_{j=1}^{\infty} \pi_{j}\; \delta_{\theta_j(x)}$$
+For continuous covariates and a continuous response, one of the most popular choices for the kernel of the single-p DDP model is the Gaussian distribution
+$$p(y|x, G_x) = \sum_{j=1}^{J} \pi_j \; \mathcal{N}\left(y; \mu_j(x), \sigma_j^2\right)$$
+where $\mu(\cdot)$ are independent Gaussian processes with a mean function of $m(\cdot)$ and covariance function of $c(\cdot, \cdot)$, denoted by $\mathrm{GP}(m, c)$. For a heteroskedastic model, also the variance can be made dependent on $x$.
+
+
+
+
+### Covariate-dependent weights 
+In general, the weights could have an additional $x$ index, defining 
+$$G_x = \sum \pi_{j}(x) \; \delta_{\theta_j(x)}(x)$$
+We write that $\mathcal{G}$ is distributed according to a dependent Dirichlet Process as follows
+$$\mathcal{G} \sim \mathrm{DDP}(\alpha, S)$$
+where $S$ is the law of the stochastic process governing the $\theta_j$'s given $j$. For example, $S$ could be a Gaussian process with index set $\mathrm{X}$.
+
+The main constraint in this case is given by the need to specify a prior such that $\sum_j \pi_j(x) = 1$ for all $x\in\mathcal{X}$. The technique used to explicitly define $\pi_j(x)$ and satisfy this constraint is based on the stick-breaking representation:
+$$\pi_1(x) = v_1(x)$$
+$$\pi_j = v_j(x) \prod_{i<j} \big(1-v_i(x)\big)$$
+where $0 \leq v_j(x) \leq 1$ a.s. for all $j$ and $x$. 
+
+
+
+### Example
+Suppose that there are finitely many dependent random probability measures $\mathcal{G} = \{G_j , j = 1,\dots,J\}$ that are judged to be __exchangeable__, i.e., the prior model $p(\mathcal{G})$ should be invariant with respect to any permutation of the indices. This case could arise, for example, as a prior model for unknown random effects distributions $G_j$ in related studies, $j = 1,\dots,J$. In words, the DDP permits to define a prior probability model $p(\mathcal{G})$ that allows us to _borrow strength_ across the $J$ studies: e.g. patients under study $j_1$ should inform inference about patients enrolled in another related study $j_2 \neq j_1$. Two extreme modeling choices would be 
+
+1. To pool all patients and assume one common random effects distribution: $G_j \stackrel{\small def}{=} G, j = 1,\dots,J$ with a prior $p(\mathcal{G})$
+2. To assume $J$ distinct random effects distributions with independent priors: $G_j \sim p(G_j)$, independently, $j = 1,\dots,J$
+
+These two choices are opposite since the first choice implies maximum borrowing of strengths, and the other choice implies no borrowing of strength. In most applications, the desired level of borrowing strength is somewhere in-between these two extremes, exemplified in the following figure.
+```{r echo = FALSE, out.width = "100%", fig.cap="One common RPM G (panel a) versus distinct RPMs Gj , independent across studies (panel b)."}
+
+knitr::include_graphics("screen2.png")
+```
+Note that in the figure\footnote{Taken from \textit{NSF-CBMS Regional Conference Series in Probability and Statistics, Volume 9, Institute of Mathematical Statistics and American Statistical Assocation, 2013.}} we added a hyperparameter $\eta$ to index the prior model $p(G_j | \eta)$ and $p(G | \eta)$, which
+was implicitly assumed fixed. The use of a random hyperparameter $\eta$ allows for _some_ borrowing of strength even in the case of conditionally independent $p(G_j | \eta)$. Learning across studies can happen through learning about the hyperparameter $\eta$. This kind of construction can be found in @Muliere1993 and @mirapetrone. However, the nature of the learning across studies is determined by the parametric form of $\eta$.
+
+
+
+
+

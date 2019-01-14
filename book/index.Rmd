@@ -1,0 +1,57 @@
+--- 
+title: "A Gentle Introduction to Bayesian Nonparametrics"
+author: "Pietro Lesci"
+date: "15 January 2019"
+output: pdf_document
+documentclass: book
+classoption: openany, letterpaper
+fontsize: 12pt
+geometry: margin=3.5cm
+header-includes:
+- \usepackage[utf8]{inputenc}
+- \usepackage{amsmath}
+- \usepackage{amsfonts}
+- \usepackage{csquotes}
+- \usepackage{dirtytalk}
+- \usepackage{graphicx}
+- \usepackage{setspace}
+bibliography:
+- biblio.bib
+biblio-style: apalike
+---
+
+```{r setup, include=FALSE}
+set.seed(1994)
+library(ggplot2)
+theme_update(axis.title = element_text(size = 14),
+             axis.text = element_text(size = 12))
+#             title = element_text(size = 15))
+
+def.chunk.hook  <- knitr::knit_hooks$get("chunk")
+knitr::knit_hooks$set(chunk = function(x, options) {
+  x <- def.chunk.hook(x, options)
+  ifelse(options$size != "normalsize", paste0("\\", options$size,"\n\n", x, "\n\n \\normalsize"), x)
+})
+
+options(digits = 6)
+knitr::opts_chunk$set(
+  dev = "pdf",
+  use.highlight = TRUE,
+  comment = "#>",
+  collapse = TRUE,
+  cache = TRUE,
+  out.width = "80%",
+  fig.align = "center",
+  fig.width = 6,
+  fig.asp = 0.618,  # 1 / phi
+  fig.show = "hold",
+  message = FALSE,
+  warning = FALSE,
+  highlight = TRUE,
+  size = "small"
+)
+
+```
+# Preface {-}
+
+In this book we will review some basic concepts regarding Bayesian Nonparametric statistics. In the Chapter 1, we will provide the core theoretical ideas behind the nonparametric approach and how it is implemented from a Bayesian perspective. In Chapter 2, we will review the definition, construction and properties of the Dirichlet Process: the \say{normal distribution of Bayesian nonparametrics} [@ghosal2017]. Finally, in Chapter 3, we will focus on regression problems and how they are approached from a Bayesian nonparametric perspective.
